@@ -35,12 +35,6 @@ export default class extends Module {
 		if (!msg.text) return false;
 		if (!msg.includes(['引継', '引き継ぎ', '引越', '引っ越し'])) return false;
 
-		// メッセージのみ
-		if (!msg.isDm) {
-			msg.reply(serifs.core.transferNeedDm);
-			return true;
-		}
-
 		const code = msg.friend.generateTransferCode();
 
 		msg.reply(serifs.core.transferCode(code));
@@ -72,14 +66,6 @@ export default class extends Module {
 		if (!msg.text.includes('って呼んで')) return false;
 		if (msg.text.startsWith('って呼んで')) return false;
 
-		// メッセージのみ
-		if (!msg.isDm) return true;
-
-		if (msg.friend.love < 5) {
-			msg.reply(serifs.core.requireMoreLove);
-			return true;
-		}
-
 		const name = msg.text.match(/^(.+?)って呼んで/)![1];
 
 		if (name.length > 10) {
@@ -99,7 +85,7 @@ export default class extends Module {
 			msg.reply(serifs.core.setNameOk(name));
 		} else {
 			msg.reply(serifs.core.san).then(reply => {
-				this.subscribeReply(msg.userId, msg.isDm, msg.isDm ? msg.userId : reply.id, {
+				this.subscribeReply(msg.userId, reply.id, {
 					name: name
 				});
 			});
@@ -157,7 +143,7 @@ export default class extends Module {
 			done();
 		} else {
 			msg.reply(serifs.core.yesOrNo).then(reply => {
-				this.subscribeReply(msg.userId, msg.isDm, reply.id, data);
+				this.subscribeReply(msg.userId, reply.id, data);
 			});
 		}
 	}

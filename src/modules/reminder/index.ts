@@ -14,7 +14,6 @@ export default class extends Module {
 	private reminds: loki.Collection<{
 		userId: string;
 		id: string;
-		isDm: boolean;
 		thing: string | null;
 		quoteId: string | null;
 		times: number; // 催促した回数(使うのか？)
@@ -59,15 +58,17 @@ export default class extends Module {
 		const separatorIndex = text.indexOf(' ') > -1 ? text.indexOf(' ') : text.indexOf('\n');
 		const thing = text.substr(separatorIndex + 1).trim();
 
-		if (thing === '' && msg.quoteId == null) {
+		if (thing === '' && msg.quoteId == null || msg.visibility === 'followers') {
 			msg.reply(serifs.reminder.invalid);
-			return true;
+			return {
+				reaction: '🆖',
+				immediate: true,
+			};
 		}
 
 		const remind = this.reminds.insertOne({
 			id: msg.id,
 			userId: msg.userId,
-			isDm: msg.isDm,
 			thing: thing === '' ? null : thing,
 			quoteId: msg.quoteId,
 			times: 0,
@@ -75,13 +76,13 @@ export default class extends Module {
 		});
 
 		// メンションをsubscribe
-		this.subscribeReply(remind!.id, msg.isDm, msg.isDm ? msg.userId : msg.id, {
+		this.subscribeReply(remind!.id, msg.id, {
 			id: remind!.id
 		});
 
 		if (msg.quoteId) {
 			// 引用元をsubscribe
-			this.subscribeReply(remind!.id, false, msg.quoteId, {
+			this.subscribeReply(remind!.id, msg.quoteId, {
 				id: remind!.id
 			});
 		}
@@ -112,14 +113,17 @@ export default class extends Module {
 
 		const done = msg.includes(['done', 'やった', 'やりました', 'はい']);
 		const cancel = msg.includes(['やめる', 'やめた', 'キャンセル']);
+		const isOneself = msg.userId === remind.userId;
 
-		if (done || cancel) {
+		if ((done || cancel) && isOneself) {
 			this.unsubscribeReply(key);
 			this.reminds.remove(remind);
 			msg.reply(done ? getSerif(serifs.reminder.done(msg.friend.name)) : serifs.reminder.cancel);
 			return;
+		} else if (isOneself === false) {
+			msg.reply(serifs.reminder.doneFromInvalidUser);
+			return;
 		} else {
-			if (msg.isDm) this.unsubscribeReply(key);
 			return false;
 		}
 	}
@@ -138,18 +142,22 @@ export default class extends Module {
 		if (friend == null) return; // 処理の流れ上、実際にnullになることは無さそうだけど一応
 
 		let reply;
-		if (remind.isDm) {
-			this.ai.sendMessage(friend.userId, {
-				text: serifs.reminder.notifyWithThing(remind.thing, friend.name)
-			});
-		} else {
+		try {
 			reply = await this.ai.post({
 				renoteId: remind.thing == null && remind.quoteId ? remind.quoteId : remind.id,
 				text: acct(friend.doc.user) + ' ' + serifs.reminder.notify(friend.name)
 			});
+		} catch (err) {
+			// renote対象が消されていたらリマインダー解除
+			if (err.statusCode === 400) {
+				this.unsubscribeReply(remind.thing == null && remind.quoteId ? remind.quoteId : remind.id);
+				this.reminds.remove(remind);
+				return;
+			}
+			return;
 		}
 
-		this.subscribeReply(remind.id, remind.isDm, remind.isDm ? remind.userId : reply.id, {
+		this.subscribeReply(remind.id, reply.id, {
 			id: remind.id
 		});
 

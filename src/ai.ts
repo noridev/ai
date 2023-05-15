@@ -146,7 +146,7 @@ export default class 藍 {
 			if (data.text && data.text.startsWith('@' + this.account.username)) {
 				// Misskeyのバグで投稿が非公開扱いになる
 				if (data.text == null) data = await this.api('notes/show', { noteId: data.id });
-				this.onReceiveMessage(new Message(this, data));
+				this.onReceiveMessage(new Message(this, data, false));
 			}
 		});
 
@@ -156,7 +156,7 @@ export default class 藍 {
 			if (data.text && data.text.startsWith('@' + this.account.username)) return;
 			// Misskeyのバグで投稿が非公開扱いになる
 			if (data.text == null) data = await this.api('notes/show', { noteId: data.id });
-			this.onReceiveMessage(new Message(this, data));
+			this.onReceiveMessage(new Message(this, data, false));
 		});
 
 		// Renoteされたとき
@@ -174,7 +174,7 @@ export default class 藍 {
 		// メッセージ
 		mainStream.on('messagingMessage', data => {
 			if (data.userId == this.account.id) return; // 自分は弾く
-			this.onReceiveMessage(new Message(this, data));
+			this.onReceiveMessage(new Message(this, data, true));
 		});
 
 		// 通知

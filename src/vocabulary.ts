@@ -416,7 +416,7 @@ export const items = [
 	'石像',
 	'古文書',
 	'巻物',
-	'Misskey',
+	'CherryPick',
 	'もぎもぎフルーツ',
 	'<ここに任意の文字列>',
 	'化石',

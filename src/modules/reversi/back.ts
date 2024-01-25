@@ -424,7 +424,7 @@ class Session {
 	}
 
 	/**
-	 * 対局が始まったことをMisskeyに投稿します
+	 * 対局が始まったことをCherryPickに投稿します
 	 */
 	private postGameStarted = async () => {
 		const text = this.isSettai
@@ -435,7 +435,7 @@ class Session {
 	}
 
 	/**
-	 * Misskeyに投稿します
+	 * CherryPickに投稿します
 	 * @param text 投稿内容
 	 */
 	private post = async (text: string, renote?: any) => {

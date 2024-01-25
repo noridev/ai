@@ -1,8 +1,8 @@
 <h1><p align="center"><img src="./ai.svg" alt="藍" height="200"></p></h1>
-<p align="center">An Ai for Misskey. <a href="./torisetu.md">About Ai</a></p>
+<p align="center">An Ai for CherryPick. <a href="./torisetu.md">About Ai</a></p>
 
 ## これなに
-Misskey用の日本語Botです。
+CherryPick用の日本語Botです。
 
 ## インストール
 > Node.js と npm と MeCab (オプション) がインストールされている必要があります。

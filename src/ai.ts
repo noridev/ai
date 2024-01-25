@@ -382,10 +382,14 @@ export default class 藍 {
 	 */
 	@bindThis
 	public sendMessage(userId: any, param: any) {
-		return this.post(Object.assign({
-			visibility: 'specified',
-			visibleUserIds: [userId],
+		return this.api('messaging/messages/create', Object.assign({
+			userId: userId,
 		}, param));
+
+		// return this.post(Object.assign({
+		//	visibility: 'specified',
+		//	visibleUserIds: [userId],
+		// }, param));
 	}
 
 	/**
@@ -413,7 +417,7 @@ export default class 藍 {
 	public subscribeReply(module: Module, key: string | null, isDm: boolean, id: string, data?: any) {
 		this.contexts.insertOne(isDm ? {
 			isDm: true,
-			noteId: id,
+			userId: id,
 			module: module.name,
 			key: key,
 			data: data
